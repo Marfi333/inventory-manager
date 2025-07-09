@@ -1,0 +1,33 @@
+name: inventory-system
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    platform: linux/amd64
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - api_data:/app/api/data
+
+  ui:
+    build:
+      context: ..
+      dockerfile: docker/ui.Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001/api
+    platform: linux/amd64
+    environment:
+      - VITE_API_URL=http://localhost:3001/api
+    ports:
+      - '8080:8080'
+
+volumes:
+  api_data:
+
+networks:
+  app-network:
+    driver: bridge
