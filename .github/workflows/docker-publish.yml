@@ -21,8 +21,8 @@ jobs:
       - name: Build Docker image
         run: |
           IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ${IMAGE_NAME}/api:latest -t ${IMAGE_NAME}/api:${{ github.sha }} -f docker/api.Dockerfile .
-          docker build -t ${IMAGE_NAME}/ui:latest -t ${IMAGE_NAME}/ui:${{ github.sha }} -f docker/ui.Dockerfile .
+          docker build --platform linux/arm64 -t ${IMAGE_NAME}/api:latest -t ${IMAGE_NAME}/api:${{ github.sha }} -f docker/api.Dockerfile .
+          docker build --platform linux/arm64 -t ${IMAGE_NAME}/ui:latest -t ${IMAGE_NAME}/ui:${{ github.sha }} -f docker/ui.Dockerfile .
       - name: Push Docker image
         run: |
           IMAGE_NAME=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
