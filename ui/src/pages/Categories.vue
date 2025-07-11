@@ -11,6 +11,37 @@
       </div>
     </div>
 
+    <!-- Search and Filter Section -->
+    <div
+      class="flex flex-col gap-4 p-4 bg-white border rounded-lg shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+    >
+      <div class="flex-1 max-w-md">
+        <div class="relative">
+          <i
+            class="absolute transform -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500 pi pi-search"
+          ></i>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search categories..."
+            class="w-full py-2 pl-10 pr-4 text-sm bg-white border rounded-md border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            @keydown.escape="clearSearch"
+          />
+          <button
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="absolute transform -translate-y-1/2 right-3 top-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+          >
+            <i class="text-sm pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+        <i class="mr-2 pi pi-info-circle"></i>
+        <span>{{ filteredCategories.length }} of {{ categories.length }} categories</span>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-24">
       <i class="text-4xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
@@ -19,7 +50,22 @@
     <!-- Mobile Cards (< 768px) -->
     <div v-else>
       <div class="md:hidden">
-        <div class="space-y-4">
+        <!-- No results state -->
+        <div v-if="filteredCategories.length === 0" class="py-12 text-center">
+          <div
+            class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700"
+          >
+            <i class="text-2xl pi pi-search text-slate-400 dark:text-slate-500"></i>
+          </div>
+          <p class="text-lg font-medium text-slate-900 dark:text-white">No categories found</p>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {{ searchQuery ? `No results for "${searchQuery}"` : 'No categories available' }}
+          </p>
+          <Button v-if="searchQuery" label="Clear search" icon="pi pi-times" @click="clearSearch" text class="mt-4" />
+        </div>
+
+        <!-- Category Cards -->
+        <div v-else class="space-y-4">
           <div
             v-for="category in paginatedCategories"
             :key="category.id"
@@ -35,7 +81,10 @@
                     <i class="text-indigo-600 pi pi-folder dark:text-indigo-400"></i>
                   </div>
                   <div>
-                    <h3 class="font-semibold text-slate-900 dark:text-white">{{ category.name }}</h3>
+                    <h3
+                      class="font-semibold text-slate-900 dark:text-white"
+                      v-html="highlightSearchTerm(category.name, searchQuery)"
+                    ></h3>
                     <p class="text-sm text-slate-500 dark:text-slate-400">
                       {{ new Date(category.createdAt).toLocaleDateString() }}
                     </p>
@@ -49,6 +98,9 @@
                     size="small"
                     @click="editCategory(category)"
                     class="!w-8 !h-8 !p-0"
+                    :pt="{
+                      root: 'dark:bg-gray-600',
+                    }"
                   />
                   <Button
                     icon="pi pi-trash"
@@ -62,19 +114,21 @@
 
               <!-- Category Description -->
               <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700">
-                <p class="text-sm text-slate-600 dark:text-slate-400">
-                  {{ category.description || 'No description' }}
-                </p>
+                <p
+                  class="text-sm text-slate-600 dark:text-slate-400"
+                  v-html="highlightSearchTerm(category.description || 'No description', searchQuery)"
+                ></p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Mobile Pagination -->
-        <div class="flex items-center justify-between px-4 mt-6">
+        <div v-if="filteredCategories.length > 0" class="flex items-center justify-between px-4 mt-6">
           <div class="text-sm text-slate-500 dark:text-slate-400">
             Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-            {{ Math.min(currentPage * itemsPerPage, categories.length) }} of {{ categories.length }} categories
+            {{ Math.min(currentPage * itemsPerPage, filteredCategories.length) }} of
+            {{ filteredCategories.length }} categories
           </div>
           <div class="flex items-center space-x-2">
             <Button
@@ -107,7 +161,7 @@
         >
           <div class="overflow-x-auto">
             <DataTable
-              :value="categories"
+              :value="filteredCategories"
               :loading="loading"
               paginator
               :rows="10"
@@ -164,6 +218,9 @@
                       size="small"
                       @click="editCategory(data)"
                       v-tooltip.top="'Edit category'"
+                      :pt="{
+                        root: 'dark:bg-gray-600',
+                      }"
                     />
                     <Button
                       icon="pi pi-trash"
@@ -206,6 +263,9 @@
             placeholder="Enter category name"
             autofocus
             class="w-full"
+            :pt="{
+              root: 'dark:bg-slate-700',
+            }"
           />
           <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
         </div>
@@ -220,6 +280,9 @@
             rows="3"
             placeholder="Enter category description"
             class="w-full"
+            :pt="{
+              root: 'dark:bg-slate-700',
+            }"
           />
         </div>
 
@@ -263,7 +326,7 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-end space-x-3">
+        <div class="flex justify-end mt-3 space-x-3">
           <Button label="Cancel" icon="pi pi-times" @click="deleteDialogVisible = false" text />
           <Button label="Delete" icon="pi pi-trash" @click="deleteCategory" :loading="deleting" severity="danger" />
         </div>
@@ -273,7 +336,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
@@ -310,11 +373,28 @@ const errors = reactive({
 })
 
 // Mobile pagination computed properties
-const totalPages = computed(() => Math.ceil(categories.value.length / itemsPerPage.value))
+const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage.value))
 const paginatedCategories = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return categories.value.slice(start, end)
+  return filteredCategories.value.slice(start, end)
+})
+
+const searchQuery = ref('')
+
+const filteredCategories = computed(() => {
+  if (!searchQuery.value) {
+    return categories.value
+  }
+  const query = searchQuery.value.toLowerCase()
+  return categories.value.filter(
+    (category) => category.name.toLowerCase().includes(query) || category.description?.toLowerCase().includes(query)
+  )
+})
+
+// Watch for search changes to reset pagination
+watch(searchQuery, () => {
+  currentPage.value = 1
 })
 
 const loadCategories = async () => {
@@ -448,6 +528,16 @@ const deleteCategory = async () => {
   } finally {
     deleting.value = false
   }
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+
+const highlightSearchTerm = (text: string, searchTerm: string) => {
+  if (!searchTerm || !text) return text
+  const regex = new RegExp(`(${searchTerm})`, 'gi')
+  return text.replace(regex, '<mark class="px-1 bg-yellow-200 rounded dark:bg-yellow-800">$1</mark>')
 }
 
 onMounted(() => {

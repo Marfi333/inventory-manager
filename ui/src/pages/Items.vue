@@ -11,6 +11,43 @@
       </div>
     </div>
 
+    <!-- Search and Filter Section -->
+    <div
+      class="flex flex-col gap-4 p-4 bg-white border rounded-lg shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+    >
+      <div class="flex-1 max-w-md">
+        <div class="relative">
+          <i
+            class="absolute transform -translate-y-1/2 left-3 top-1/2 text-slate-400 dark:text-slate-500 pi pi-search"
+          ></i>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search items..."
+            class="w-full py-2 pl-10 pr-4 text-sm bg-white border rounded-md border-slate-200 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            @keydown.escape="clearSearch"
+          />
+          <button
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="absolute transform -translate-y-1/2 right-3 top-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+          >
+            <i class="text-sm pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+          <i class="mr-2 pi pi-info-circle"></i>
+          <span>{{ filteredItems.length }} of {{ items.length }} items</span>
+        </div>
+        <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+          <i class="mr-2 pi pi-chart-line"></i>
+          <span>{{ totalStock }} total stock</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-24">
       <i class="text-4xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
@@ -19,7 +56,22 @@
     <!-- Mobile Cards (< 768px) -->
     <div v-else>
       <div class="md:hidden">
-        <div class="space-y-4">
+        <!-- No results state -->
+        <div v-if="filteredItems.length === 0" class="py-12 text-center">
+          <div
+            class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700"
+          >
+            <i class="text-2xl pi pi-search text-slate-400 dark:text-slate-500"></i>
+          </div>
+          <p class="text-lg font-medium text-slate-900 dark:text-white">No items found</p>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {{ searchQuery ? `No results for "${searchQuery}"` : 'No items available' }}
+          </p>
+          <Button v-if="searchQuery" label="Clear search" icon="pi pi-times" @click="clearSearch" text class="mt-4" />
+        </div>
+
+        <!-- Item Cards -->
+        <div v-else class="space-y-4">
           <div
             v-for="item in paginatedItems"
             :key="item.id"
@@ -35,10 +87,14 @@
                     <i class="text-emerald-600 pi pi-box dark:text-emerald-400"></i>
                   </div>
                   <div class="flex-1">
-                    <h3 class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
-                      {{ getCategoryName(item.categoryId) }}
-                    </p>
+                    <h3
+                      class="font-semibold text-slate-900 dark:text-white"
+                      v-html="highlightSearchTerm(item.name, searchQuery)"
+                    ></h3>
+                    <p
+                      class="text-sm text-slate-500 dark:text-slate-400"
+                      v-html="highlightSearchTerm(getCategoryName(item.categoryId), searchQuery)"
+                    ></p>
                   </div>
                 </div>
                 <!-- Action Buttons -->
@@ -49,6 +105,9 @@
                     size="small"
                     @click="editItem(item)"
                     class="!w-8 !h-8 !p-0"
+                    :pt="{
+                      root: 'dark:bg-gray-600',
+                    }"
                   />
                   <Button
                     icon="pi pi-trash"
@@ -64,9 +123,10 @@
               <div class="space-y-3">
                 <!-- Description -->
                 <div>
-                  <p class="text-sm text-slate-600 dark:text-slate-400">
-                    {{ item.description || 'No description' }}
-                  </p>
+                  <p
+                    class="text-sm text-slate-600 dark:text-slate-400"
+                    v-html="highlightSearchTerm(item.description || 'No description', searchQuery)"
+                  ></p>
                 </div>
 
                 <!-- Quantity and SKUs -->
@@ -81,6 +141,9 @@
                         @click="adjustQuantity(item, -1)"
                         :disabled="item.quantity <= 0"
                         class="!w-8 !h-8 !p-0"
+                        :pt="{
+                          root: 'dark:bg-gray-600',
+                        }"
                       />
                       <span class="font-medium text-slate-900 dark:text-white min-w-[2rem] text-center">
                         {{ item.quantity }}
@@ -91,6 +154,9 @@
                         size="small"
                         @click="adjustQuantity(item, 1)"
                         class="!w-8 !h-8 !p-0"
+                        :pt="{
+                          root: 'dark:bg-gray-600',
+                        }"
                       />
                     </div>
 
@@ -109,6 +175,9 @@
                     size="small"
                     @click="showQuantityDialog(item)"
                     class="!text-xs !px-2 !py-1"
+                    :pt="{
+                      root: 'dark:bg-gray-600',
+                    }"
                   />
                 </div>
               </div>
@@ -117,10 +186,10 @@
         </div>
 
         <!-- Mobile Pagination -->
-        <div class="flex items-center justify-between px-4 mt-6">
+        <div v-if="filteredItems.length > 0" class="flex items-center justify-between px-4 mt-6">
           <div class="text-sm text-slate-500 dark:text-slate-400">
             Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
-            {{ Math.min(currentPage * itemsPerPage, items.length) }} of {{ items.length }} items
+            {{ Math.min(currentPage * itemsPerPage, filteredItems.length) }} of {{ filteredItems.length }} items
           </div>
           <div class="flex items-center space-x-2">
             <Button
@@ -153,7 +222,7 @@
         >
           <div class="overflow-x-auto">
             <DataTable
-              :value="items"
+              :value="filteredItems"
               :loading="loading"
               paginator
               :rows="10"
@@ -245,6 +314,9 @@
                       severity="secondary"
                       size="small"
                       v-tooltip.top="'Manage quantity'"
+                      :pt="{
+                        root: 'dark:bg-gray-600',
+                      }"
                     />
                     <Button
                       icon="pi pi-pencil"
@@ -252,6 +324,9 @@
                       severity="secondary"
                       size="small"
                       v-tooltip.top="'Edit item'"
+                      :pt="{
+                        root: 'dark:bg-gray-600',
+                      }"
                     />
                     <Button
                       icon="pi pi-trash"
@@ -295,6 +370,9 @@
               placeholder="Enter item name"
               autofocus
               class="w-full"
+              :pt="{
+                root: 'dark:bg-slate-700',
+              }"
             />
             <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
           </div>
@@ -312,6 +390,9 @@
               placeholder="Select a category"
               :invalid="!!errors.categoryId"
               class="w-full"
+              :pt="{
+                root: 'dark:bg-slate-700',
+              }"
             />
             <small v-if="errors.categoryId" class="p-error">{{ errors.categoryId }}</small>
           </div>
@@ -327,6 +408,9 @@
             rows="3"
             placeholder="Enter item description"
             class="w-full"
+            :pt="{
+              root: 'dark:bg-slate-700',
+            }"
           />
         </div>
 
@@ -341,6 +425,10 @@
             :min="0"
             placeholder="Enter quantity"
             class="w-full"
+            :pt="{
+              root: 'dark:bg-slate-700',
+              pcInputText: 'dark:bg-slate-700',
+            }"
           />
           <small v-if="errors.quantity" class="p-error">{{ errors.quantity }}</small>
         </div>
@@ -349,7 +437,14 @@
           <label class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">SKUs</label>
           <div class="space-y-2">
             <div v-for="(_, index) in itemForm.skus" :key="index" class="flex items-center space-x-2">
-              <InputText v-model="itemForm.skus[index]" placeholder="Enter SKU" class="flex-1" />
+              <InputText
+                v-model="itemForm.skus[index]"
+                placeholder="Enter SKU"
+                class="flex-1"
+                :pt="{
+                  root: 'dark:bg-slate-700',
+                }"
+              />
               <Button
                 icon="pi pi-trash"
                 @click="removeSku(index)"
@@ -404,7 +499,7 @@
       </div>
 
       <template #footer>
-        <div class="flex justify-end space-x-3">
+        <div class="flex justify-end mt-3 space-x-3">
           <Button label="Cancel" icon="pi pi-times" @click="deleteDialogVisible = false" text />
           <Button label="Delete" icon="pi pi-trash" @click="deleteItem" :loading="deleting" severity="danger" />
         </div>
@@ -438,7 +533,7 @@
 
       <form
         @submit.prevent="updateQuantity(selectedItem!, quantityForm.operation, quantityForm.quantity)"
-        class="space-y-4"
+        class="mt-4 space-y-4"
       >
         <div>
           <label for="quantity-operation" class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -456,6 +551,9 @@
             optionValue="value"
             placeholder="Select operation"
             class="w-full"
+            :pt="{
+              root: 'dark:bg-slate-700',
+            }"
           />
         </div>
 
@@ -482,7 +580,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
@@ -513,6 +611,31 @@ const selectedItem = ref<Item | null>(null)
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
+// Search and filter state
+const searchQuery = ref('')
+const filteredItems = computed(() => {
+  if (!searchQuery.value) {
+    return items.value
+  }
+  const query = searchQuery.value.toLowerCase()
+  return items.value.filter((item) => {
+    const matchesName = item.name.toLowerCase().includes(query)
+    const matchesDescription = item.description ? item.description.toLowerCase().includes(query) : false
+    const matchesSkus = item.skus.some((sku) => sku.toLowerCase().includes(query))
+    const matchesCategory = getCategoryName(item.categoryId).toLowerCase().includes(query)
+    return matchesName || matchesDescription || matchesSkus || matchesCategory
+  })
+})
+
+const totalStock = computed(() => {
+  return filteredItems.value.reduce((sum, item) => sum + item.quantity, 0)
+})
+
+// Watch for search changes to reset pagination
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
 const itemForm = reactive({
   name: '',
   description: '',
@@ -533,11 +656,11 @@ const errors = reactive({
 })
 
 // Mobile pagination computed properties
-const totalPages = computed(() => Math.ceil(items.value.length / itemsPerPage.value))
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value))
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   const end = start + itemsPerPage.value
-  return items.value.slice(start, end)
+  return filteredItems.value.slice(start, end)
 })
 
 const getCategoryName = (categoryId: string) => {
@@ -792,6 +915,16 @@ const showQuantityDialog = (item: Item) => {
   quantityDialogVisible.value = true
 }
 
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+
+const highlightSearchTerm = (text: string, searchTerm: string) => {
+  if (!searchTerm || !text) return text
+  const regex = new RegExp(`(${searchTerm})`, 'gi')
+  return text.replace(regex, '<mark class="px-1 bg-yellow-200 rounded dark:bg-yellow-800">$1</mark>')
+}
+
 onMounted(() => {
   loadData()
 })
@@ -846,5 +979,33 @@ onMounted(() => {
 .dark .custom-datatable :deep(.p-paginator) {
   background-color: #1e293b;
   border-top: 1px solid #334155;
+}
+</style>
+
+<style>
+.p-datatable-header-cell {
+  @apply dark:bg-slate-700/50 dark:text-slate-200;
+}
+
+.p-paginator {
+  @apply dark:bg-slate-800 dark:border-slate-600;
+}
+
+.p-row-even,
+.p-row-odd {
+  background: transparent !important;
+}
+
+.p-dialog-header {
+  @apply rounded-t-xl;
+}
+.p-dialog-content {
+  @apply rounded-b-xl;
+}
+.p-dialog-footer {
+  @apply rounded-b-xl;
+}
+.p-inputtext {
+  @apply dark:bg-slate-700;
 }
 </style>

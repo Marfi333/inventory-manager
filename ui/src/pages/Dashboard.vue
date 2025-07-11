@@ -95,16 +95,16 @@
                 </p>
               </div>
             </div>
-            <div class="flex-shrink-0 ml-4 text-right">
-              <div class="flex items-center mb-1 text-sm font-medium text-slate-900 dark:text-white">
-                <i class="mr-1 text-xs pi pi-hashtag"></i>
+            <div class="flex flex-col items-end justify-end flex-shrink-0 ml-4 text-right">
+              <div class="flex items-center mb-1.5 text-sm font-medium text-slate-900 dark:text-white w-fit">
                 <span>{{ item.quantity }}</span>
+                <i class="ml-2 text-xs pi pi-hashtag"></i>
               </div>
               <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                <i class="mr-1 text-xs pi pi-qrcode"></i>
                 <span class="truncate max-w-[100px] sm:max-w-none">{{
                   item.skus.length > 0 ? item.skus.join(', ') : 'No SKUs'
                 }}</span>
+                <i class="ml-2 text-xs pi pi-tag"></i>
               </div>
             </div>
           </div>
