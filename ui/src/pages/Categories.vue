@@ -7,95 +7,177 @@
         <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Manage your inventory categories</p>
       </div>
       <div class="mt-4 sm:mt-0">
-        <Button
-          label="Add Category"
-          icon="pi pi-plus"
-          @click="showCreateDialog"
-        />
+        <Button label="Add Category" icon="pi pi-plus" @click="showCreateDialog" />
       </div>
     </div>
 
-    <!-- Categories Table -->
-    <div class="overflow-hidden transition-colors duration-200 bg-white border rounded-lg shadow-sm dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-      <div class="overflow-x-auto">
-        <DataTable
-          :value="categories"
-          :loading="loading"
-          paginator
-          :rows="10"
-          :rowsPerPageOptions="[5, 10, 25]"
-          class="w-full"
-          tableStyle="min-width: 50rem"
-          :pt="{
-            root: { class: 'bg-white dark:bg-slate-800' },
-            header: { class: 'bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-600' },
-            table: { class: 'bg-white dark:bg-slate-800' },
-            thead: { class: 'bg-slate-50 dark:bg-slate-700/50' },
-            tbody: { class: 'bg-white dark:bg-slate-800' },
-            headerRow: { class: 'bg-slate-50 dark:bg-slate-700/50' },
-            headerCell: { class: 'bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 font-medium text-sm border-b border-slate-200 dark:border-slate-600 px-6 py-4' },
-            bodyRow: { class: 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 border-b border-slate-100 dark:border-slate-600 last:border-b-0' },
-            bodyCell: { class: 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-6 py-4 border-b border-slate-100 dark:border-slate-600 last:border-b-0' },
-            footer: { class: 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-600' },
-            paginator: { class: 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-600' },
-            paginatorPage: { class: 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700' },
-            paginatorPageSelected: { class: 'bg-indigo-600 dark:bg-indigo-500 text-white' },
-          }"
-        >
-          <template #loading>
-            <div class="flex items-center justify-center py-12">
-              <i class="text-2xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
-            </div>
-          </template>
-          
-          <Column field="name" header="Name" sortable class="px-6 py-4">
-            <template #body="{ data }">
-              <div class="flex items-center">
-                <div class="flex items-center justify-center w-8 h-8 mr-3 bg-indigo-100 rounded-full dark:bg-indigo-900/50">
-                  <i class="text-sm text-indigo-600 pi pi-folder dark:text-indigo-400"></i>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-24">
+      <i class="text-4xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
+    </div>
+
+    <!-- Mobile Cards (< 768px) -->
+    <div v-else>
+      <div class="md:hidden">
+        <div class="space-y-4">
+          <div
+            v-for="category in paginatedCategories"
+            :key="category.id"
+            class="transition-all duration-200 bg-white border rounded-lg shadow-sm dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-md"
+          >
+            <div class="p-4">
+              <!-- Category Header -->
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center">
+                  <div
+                    class="flex items-center justify-center w-10 h-10 mr-3 bg-indigo-100 rounded-lg dark:bg-indigo-900/50"
+                  >
+                    <i class="text-indigo-600 pi pi-folder dark:text-indigo-400"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-slate-900 dark:text-white">{{ category.name }}</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                      {{ new Date(category.createdAt).toLocaleDateString() }}
+                    </p>
+                  </div>
                 </div>
-                <span class="font-medium text-slate-900 dark:text-white">{{ data.name }}</span>
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-2">
+                  <Button
+                    icon="pi pi-pencil"
+                    severity="secondary"
+                    size="small"
+                    @click="editCategory(category)"
+                    class="!w-8 !h-8 !p-0"
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small"
+                    @click="confirmDelete(category)"
+                    class="!w-8 !h-8 !p-0"
+                  />
+                </div>
               </div>
-            </template>
-          </Column>
-          
-          <Column field="description" header="Description" class="px-6 py-4">
-            <template #body="{ data }">
-              <span class="text-slate-600 dark:text-slate-400">{{ data.description || 'No description' }}</span>
-            </template>
-          </Column>
-          
-          <Column field="createdAt" header="Created" sortable class="px-6 py-4">
-            <template #body="{ data }">
-              <span class="text-sm text-slate-500 dark:text-slate-400">
-                {{ new Date(data.createdAt).toLocaleDateString() }}
-              </span>
-            </template>
-          </Column>
-          
-          <Column header="Actions" :exportable="false" class="px-6 py-4" style="min-width: 8rem">
-            <template #body="{ data }">
-              <div class="flex items-center space-x-2">
-                <Button
-                  icon="pi pi-pencil"
-                  @click="editCategory(data)"
-                  text
-                  rounded
-                  severity="info"
-                  v-tooltip="'Edit'"
-                />
-                <Button
-                  icon="pi pi-trash"
-                  @click="confirmDelete(data)"
-                  text
-                  rounded
-                  severity="danger"
-                  v-tooltip="'Delete'"
-                />
+
+              <!-- Category Description -->
+              <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700">
+                <p class="text-sm text-slate-600 dark:text-slate-400">
+                  {{ category.description || 'No description' }}
+                </p>
               </div>
-            </template>
-          </Column>
-        </DataTable>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Pagination -->
+        <div class="flex items-center justify-between px-4 mt-6">
+          <div class="text-sm text-slate-500 dark:text-slate-400">
+            Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
+            {{ Math.min(currentPage * itemsPerPage, categories.length) }} of {{ categories.length }} categories
+          </div>
+          <div class="flex items-center space-x-2">
+            <Button
+              icon="pi pi-chevron-left"
+              severity="secondary"
+              size="small"
+              :disabled="currentPage === 1"
+              @click="currentPage--"
+              class="!w-8 !h-8 !p-0"
+            />
+            <span class="text-sm font-medium text-slate-900 dark:text-white">
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+            <Button
+              icon="pi pi-chevron-right"
+              severity="secondary"
+              size="small"
+              :disabled="currentPage === totalPages"
+              @click="currentPage++"
+              class="!w-8 !h-8 !p-0"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table (>= 768px) -->
+      <div class="hidden md:block">
+        <div
+          class="overflow-hidden transition-colors duration-200 bg-white border rounded-lg shadow-sm dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+        >
+          <div class="overflow-x-auto">
+            <DataTable
+              :value="categories"
+              :loading="loading"
+              paginator
+              :rows="10"
+              :rowsPerPageOptions="[5, 10, 25]"
+              tableStyle="min-width: 50rem"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} categories"
+              :globalFilterFields="['name', 'description']"
+              responsiveLayout="scroll"
+              :pageLinkSize="5"
+              :alwaysShowPaginator="false"
+              :rowHover="true"
+              class="w-full custom-datatable"
+            >
+              <template #loading>
+                <div class="flex items-center justify-center py-12">
+                  <i class="text-2xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
+                </div>
+              </template>
+
+              <Column field="name" header="Name" sortable class="px-6 py-4">
+                <template #body="{ data }">
+                  <div class="flex items-center">
+                    <div
+                      class="flex items-center justify-center w-8 h-8 mr-3 bg-indigo-100 rounded-full dark:bg-indigo-900/50"
+                    >
+                      <i class="text-sm text-indigo-600 pi pi-folder dark:text-indigo-400"></i>
+                    </div>
+                    <span class="font-medium text-slate-900 dark:text-white">{{ data.name }}</span>
+                  </div>
+                </template>
+              </Column>
+
+              <Column field="description" header="Description" class="px-6 py-4">
+                <template #body="{ data }">
+                  <span class="text-slate-600 dark:text-slate-400">{{ data.description || 'No description' }}</span>
+                </template>
+              </Column>
+
+              <Column field="createdAt" header="Created" sortable class="px-6 py-4">
+                <template #body="{ data }">
+                  <span class="text-sm text-slate-500 dark:text-slate-400">
+                    {{ new Date(data.createdAt).toLocaleDateString() }}
+                  </span>
+                </template>
+              </Column>
+
+              <Column header="Actions" class="px-6 py-4">
+                <template #body="{ data }">
+                  <div class="flex items-center space-x-2">
+                    <Button
+                      icon="pi pi-pencil"
+                      severity="secondary"
+                      size="small"
+                      @click="editCategory(data)"
+                      v-tooltip.top="'Edit category'"
+                    />
+                    <Button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      size="small"
+                      @click="confirmDelete(data)"
+                      v-tooltip.top="'Delete category'"
+                    />
+                  </div>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -108,9 +190,10 @@
       class="p-fluid"
       :pt="{
         root: 'bg-white dark:bg-slate-800',
-        header: 'bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white',
+        header:
+          'bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white',
         content: 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white',
-        footer: 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700'
+        footer: 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700',
       }"
     >
       <form @submit.prevent="saveCategory" class="space-y-4">
@@ -128,7 +211,9 @@
         </div>
 
         <div>
-          <label for="description" class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+          <label for="description" class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300"
+            >Description</label
+          >
           <Textarea
             id="description"
             v-model="categoryForm.description"
@@ -139,12 +224,7 @@
         </div>
 
         <div class="flex justify-end pt-4 space-x-3">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            @click="dialogVisible = false"
-            text
-          />
+          <Button label="Cancel" icon="pi pi-times" @click="dialogVisible = false" text />
           <Button
             :label="dialogMode === 'create' ? 'Create' : 'Update'"
             icon="pi pi-check"
@@ -163,9 +243,10 @@
       :modal="true"
       :pt="{
         root: 'bg-white dark:bg-slate-800',
-        header: 'bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white',
+        header:
+          'bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white',
         content: 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white',
-        footer: 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700'
+        footer: 'bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700',
       }"
     >
       <div class="flex items-center space-x-3">
@@ -175,26 +256,16 @@
         <div>
           <p class="text-sm font-medium text-slate-900 dark:text-white">Delete Category</p>
           <p class="text-sm text-slate-600 dark:text-slate-400" v-if="categoryToDelete">
-            Are you sure you want to delete <strong>{{ categoryToDelete.name }}</strong>?
+            Are you sure you want to delete <strong>{{ categoryToDelete.name }}</strong
+            >?
           </p>
         </div>
       </div>
-      
+
       <template #footer>
         <div class="flex justify-end space-x-3">
-          <Button
-            label="Cancel"
-            icon="pi pi-times"
-            @click="deleteDialogVisible = false"
-            text
-          />
-          <Button
-            label="Delete"
-            icon="pi pi-trash"
-            @click="deleteCategory"
-            :loading="deleting"
-            severity="danger"
-          />
+          <Button label="Cancel" icon="pi pi-times" @click="deleteDialogVisible = false" text />
+          <Button label="Delete" icon="pi pi-trash" @click="deleteCategory" :loading="deleting" severity="danger" />
         </div>
       </template>
     </Dialog>
@@ -202,182 +273,236 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import Textarea from 'primevue/textarea';
-import { apiService } from '../services/api';
-import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types';
+import { ref, onMounted, reactive, computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import Button from 'primevue/button'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
+import { apiService } from '../services/api'
+import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types'
 
-const toast = useToast();
+const toast = useToast()
 
-const loading = ref(true);
-const saving = ref(false);
-const deleting = ref(false);
-const categories = ref<Category[]>([]);
-const dialogVisible = ref(false);
-const deleteDialogVisible = ref(false);
-const dialogMode = ref<'create' | 'edit'>('create');
-const categoryToDelete = ref<Category | null>(null);
-const selectedCategory = ref<Category | null>(null);
+const loading = ref(true)
+const saving = ref(false)
+const deleting = ref(false)
+const categories = ref<Category[]>([])
+const dialogVisible = ref(false)
+const deleteDialogVisible = ref(false)
+const dialogMode = ref<'create' | 'edit'>('create')
+const categoryToDelete = ref<Category | null>(null)
+const selectedCategory = ref<Category | null>(null)
+
+// Mobile pagination
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
 const categoryForm = reactive({
   name: '',
   description: '',
-});
+})
 
 const errors = reactive({
   name: '',
-});
+})
+
+// Mobile pagination computed properties
+const totalPages = computed(() => Math.ceil(categories.value.length / itemsPerPage.value))
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return categories.value.slice(start, end)
+})
 
 const loadCategories = async () => {
   try {
-    loading.value = true;
-    categories.value = await apiService.getCategories();
+    loading.value = true
+    categories.value = await apiService.getCategories()
   } catch (error) {
-    console.error('Error loading categories:', error);
+    console.error('Error loading categories:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
       detail: 'Failed to load categories',
       life: 3000,
-    });
+    })
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 const showCreateDialog = () => {
-  dialogMode.value = 'create';
-  categoryForm.name = '';
-  categoryForm.description = '';
-  errors.name = '';
-  dialogVisible.value = true;
-};
+  dialogMode.value = 'create'
+  categoryForm.name = ''
+  categoryForm.description = ''
+  errors.name = ''
+  dialogVisible.value = true
+}
 
 const editCategory = (category: Category) => {
-  dialogMode.value = 'edit';
-  selectedCategory.value = category;
-  categoryForm.name = category.name;
-  categoryForm.description = category.description || '';
-  errors.name = '';
-  dialogVisible.value = true;
-};
+  dialogMode.value = 'edit'
+  selectedCategory.value = category
+  categoryForm.name = category.name
+  categoryForm.description = category.description || ''
+  errors.name = ''
+  dialogVisible.value = true
+}
 
 const validateForm = () => {
-  errors.name = '';
-  
+  errors.name = ''
+
   if (!categoryForm.name.trim()) {
-    errors.name = 'Name is required';
-    return false;
+    errors.name = 'Name is required'
+    return false
   }
-  
+
   if (categoryForm.name.length > 100) {
-    errors.name = 'Name must be less than 100 characters';
-    return false;
+    errors.name = 'Name must be less than 100 characters'
+    return false
   }
-  
-  return true;
-};
+
+  return true
+}
 
 const saveCategory = async () => {
-  if (!validateForm()) return;
+  if (!validateForm()) return
 
   try {
-    saving.value = true;
-    
+    saving.value = true
+
     if (dialogMode.value === 'create') {
       const data: CreateCategoryRequest = {
         name: categoryForm.name.trim(),
         description: categoryForm.description.trim() || undefined,
-      };
-      
-      await apiService.createCategory(data);
+      }
+
+      await apiService.createCategory(data)
       toast.add({
         severity: 'success',
         summary: 'Success',
         detail: 'Category created successfully',
         life: 3000,
-      });
+      })
     } else {
       const data: UpdateCategoryRequest = {
         name: categoryForm.name.trim(),
         description: categoryForm.description.trim() || undefined,
-      };
-      
-      await apiService.updateCategory(selectedCategory.value!.id, data);
+      }
+
+      await apiService.updateCategory(selectedCategory.value!.id, data)
       toast.add({
         severity: 'success',
         summary: 'Success',
         detail: 'Category updated successfully',
         life: 3000,
-      });
+      })
     }
-    
-    dialogVisible.value = false;
-    await loadCategories();
+
+    dialogVisible.value = false
+    await loadCategories()
   } catch (error) {
-    console.error('Error saving category:', error);
+    console.error('Error saving category:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
       detail: error instanceof Error ? error.message : 'Failed to save category',
       life: 3000,
-    });
+    })
   } finally {
-    saving.value = false;
+    saving.value = false
   }
-};
+}
 
 const confirmDelete = (category: Category) => {
-  categoryToDelete.value = category;
-  deleteDialogVisible.value = true;
-};
+  categoryToDelete.value = category
+  deleteDialogVisible.value = true
+}
 
 const deleteCategory = async () => {
-  if (!categoryToDelete.value) return;
+  if (!categoryToDelete.value) return
 
   try {
-    deleting.value = true;
-    await apiService.deleteCategory(categoryToDelete.value.id);
-    
+    deleting.value = true
+    await apiService.deleteCategory(categoryToDelete.value.id)
+
     toast.add({
       severity: 'success',
       summary: 'Success',
       detail: 'Category deleted successfully',
       life: 3000,
-    });
-    
-    deleteDialogVisible.value = false;
-    await loadCategories();
+    })
+
+    deleteDialogVisible.value = false
+    await loadCategories()
   } catch (error) {
-    console.error('Error deleting category:', error);
+    console.error('Error deleting category:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
       detail: error instanceof Error ? error.message : 'Failed to delete category',
       life: 3000,
-    });
+    })
   } finally {
-    deleting.value = false;
+    deleting.value = false
   }
-};
-
-onMounted(() => {
-  loadCategories();
-});
-</script> 
-
-<style>
-.p-datatable-header-cell {
-  @apply dark:bg-slate-700/50 dark:text-slate-200;
 }
 
-.p-paginator {
-  @apply dark:bg-slate-800 dark:border-slate-600;
+onMounted(() => {
+  loadCategories()
+})
+</script>
+
+<style scoped>
+/* Custom styles for mobile cards following Design.json */
+.custom-datatable :deep(.p-datatable) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.custom-datatable :deep(.p-datatable-header) {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 16px;
+}
+
+.custom-datatable :deep(.p-datatable-tbody > tr) {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.custom-datatable :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #f8fafc;
+}
+
+.custom-datatable :deep(.p-datatable-tbody > tr > td) {
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.custom-datatable :deep(.p-paginator) {
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 16px;
+}
+
+/* Dark mode adjustments */
+.dark .custom-datatable :deep(.p-datatable-header) {
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.dark .custom-datatable :deep(.p-datatable-tbody > tr) {
+  border-bottom: 1px solid #334155;
+}
+
+.dark .custom-datatable :deep(.p-datatable-tbody > tr:hover) {
+  background-color: #1e293b;
+}
+
+.dark .custom-datatable :deep(.p-paginator) {
+  background-color: #1e293b;
+  border-top: 1px solid #334155;
 }
 </style>
