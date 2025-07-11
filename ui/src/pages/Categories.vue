@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Categories</h1>
@@ -11,7 +10,6 @@
       </div>
     </div>
 
-    <!-- Search and Filter Section -->
     <div
       class="flex flex-col gap-4 p-4 bg-white border rounded-lg shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-slate-800 border-slate-200 dark:border-slate-700"
     >
@@ -42,7 +40,6 @@
       </div>
     </div>
 
-    <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-24">
       <i class="text-4xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
     </div>
@@ -50,7 +47,6 @@
     <!-- Mobile Cards (< 768px) -->
     <div v-else>
       <div class="md:hidden">
-        <!-- No results state -->
         <div v-if="filteredCategories.length === 0" class="py-12 text-center">
           <div
             class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700"
@@ -64,7 +60,6 @@
           <Button v-if="searchQuery" label="Clear search" icon="pi pi-times" @click="clearSearch" text class="mt-4" />
         </div>
 
-        <!-- Category Cards -->
         <div v-else class="space-y-4">
           <div
             v-for="category in paginatedCategories"
@@ -72,7 +67,6 @@
             class="transition-all duration-200 bg-white border rounded-lg shadow-sm dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-md"
           >
             <div class="p-4">
-              <!-- Category Header -->
               <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center">
                   <div
@@ -90,7 +84,7 @@
                     </p>
                   </div>
                 </div>
-                <!-- Action Buttons -->
+
                 <div class="flex items-center space-x-2">
                   <Button
                     icon="pi pi-pencil"
@@ -112,7 +106,6 @@
                 </div>
               </div>
 
-              <!-- Category Description -->
               <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700">
                 <p
                   class="text-sm text-slate-600 dark:text-slate-400"
@@ -123,7 +116,6 @@
           </div>
         </div>
 
-        <!-- Mobile Pagination -->
         <div v-if="filteredCategories.length > 0" class="flex items-center justify-between px-4 mt-6">
           <div class="text-sm text-slate-500 dark:text-slate-400">
             Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
@@ -238,7 +230,6 @@
       </div>
     </div>
 
-    <!-- Create/Edit Dialog -->
     <Dialog
       v-model:visible="dialogVisible"
       :header="dialogMode === 'create' ? 'Create Category' : 'Edit Category'"
@@ -298,7 +289,6 @@
       </form>
     </Dialog>
 
-    <!-- Delete Confirmation Dialog -->
     <Dialog
       v-model:visible="deleteDialogVisible"
       header="Confirm Delete"
@@ -359,7 +349,6 @@ const dialogMode = ref<'create' | 'edit'>('create')
 const categoryToDelete = ref<Category | null>(null)
 const selectedCategory = ref<Category | null>(null)
 
-// Mobile pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
@@ -372,7 +361,6 @@ const errors = reactive({
   name: '',
 })
 
-// Mobile pagination computed properties
 const totalPages = computed(() => Math.ceil(filteredCategories.value.length / itemsPerPage.value))
 const paginatedCategories = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
@@ -392,7 +380,6 @@ const filteredCategories = computed(() => {
   )
 })
 
-// Watch for search changes to reset pagination
 watch(searchQuery, () => {
   currentPage.value = 1
 })
@@ -546,7 +533,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom styles for mobile cards following Design.json */
 .custom-datatable :deep(.p-datatable) {
   border-radius: 8px;
   overflow: hidden;
@@ -577,7 +563,6 @@ onMounted(() => {
   padding: 16px;
 }
 
-/* Dark mode adjustments */
 .dark .custom-datatable :deep(.p-datatable-header) {
   background-color: #1e293b;
   border-bottom: 1px solid #334155;

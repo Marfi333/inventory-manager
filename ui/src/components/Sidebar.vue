@@ -1,20 +1,17 @@
 <template>
   <div>
-    <!-- Mobile overlay -->
     <div
       v-if="isMobileMenuOpen"
       class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
       @click="closeMobileMenu"
     ></div>
 
-    <!-- Sidebar -->
     <div
       :class="[
         'fixed inset-y-0 left-0 z-50 w-60 bg-slate-800  transform transition-transform duration-300 ease-in-out lg:translate-x-0',
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
-      <!-- Logo -->
       <div class="flex items-center justify-between px-6 py-5 border-b border-slate-700">
         <div class="flex items-center">
           <i class="mr-3 text-2xl text-white pi pi-warehouse"></i>
@@ -28,7 +25,6 @@
         </button>
       </div>
 
-      <!-- Navigation -->
       <nav class="mt-6">
         <div class="px-3 space-y-1">
           <router-link
@@ -49,7 +45,6 @@
         </div>
       </nav>
 
-      <!-- Dark Mode Toggle -->
       <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
         <button
           @click="toggleDarkMode"
@@ -124,7 +119,6 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 
-// Expose method to parent component
 defineExpose({
   toggleMobileMenu: () => {
     isMobileMenuOpen.value = !isMobileMenuOpen.value

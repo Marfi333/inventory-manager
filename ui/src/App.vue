@@ -1,51 +1,48 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import Toast from 'primevue/toast';
-import Sidebar from './components/Sidebar.vue';
+import { ref } from 'vue'
+import Toast from 'primevue/toast'
+import Sidebar from './components/Sidebar.vue'
 
-const sidebarRef = ref();
+const sidebarRef = ref()
 
 const toggleMobileMenu = () => {
-  sidebarRef.value?.toggleMobileMenu();
-};
+  sidebarRef.value?.toggleMobileMenu()
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
-    <!-- Sidebar -->
+  <div class="min-h-screen transition-colors duration-200 bg-slate-50 dark:bg-slate-900">
     <Sidebar ref="sidebarRef" />
 
-    <!-- Mobile header -->
-    <div class="lg:hidden bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 transition-colors duration-200">
+    <div
+      class="transition-colors duration-200 bg-white border-b shadow-sm lg:hidden dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+    >
       <div class="flex items-center justify-between px-4 py-3">
-        <button 
+        <button
           @click="toggleMobileMenu"
-          class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-2 rounded transition-colors duration-200"
+          class="p-2 transition-colors duration-200 rounded text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
         >
-          <i class="pi pi-bars text-xl"></i>
+          <i class="text-xl pi pi-bars"></i>
         </button>
         <div class="flex items-center">
-          <i class="pi pi-warehouse text-indigo-600 dark:text-indigo-400 text-xl mr-2"></i>
+          <i class="mr-2 text-xl text-indigo-600 pi pi-warehouse dark:text-indigo-400"></i>
           <span class="font-semibold text-slate-900 dark:text-white">Inventory</span>
         </div>
-        <div class="w-10"></div> <!-- Spacer for centering -->
+        <div class="w-10"></div>
       </div>
     </div>
 
-    <!-- Main content -->
     <div class="lg:ml-60">
       <main class="p-4 lg:p-6">
         <router-view />
       </main>
     </div>
 
-    <!-- Toast for notifications -->
     <Toast position="bottom-right" />
   </div>
 </template>
 
 <style scoped>
-/* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
   width: 6px;
 }

@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Items</h1>
@@ -11,7 +10,6 @@
       </div>
     </div>
 
-    <!-- Search and Filter Section -->
     <div
       class="flex flex-col gap-4 p-4 bg-white border rounded-lg shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-slate-800 border-slate-200 dark:border-slate-700"
     >
@@ -48,7 +46,6 @@
       </div>
     </div>
 
-    <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-24">
       <i class="text-4xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
     </div>
@@ -56,7 +53,6 @@
     <!-- Mobile Cards (< 768px) -->
     <div v-else>
       <div class="md:hidden">
-        <!-- No results state -->
         <div v-if="filteredItems.length === 0" class="py-12 text-center">
           <div
             class="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-700"
@@ -70,7 +66,6 @@
           <Button v-if="searchQuery" label="Clear search" icon="pi pi-times" @click="clearSearch" text class="mt-4" />
         </div>
 
-        <!-- Item Cards -->
         <div v-else class="space-y-4">
           <div
             v-for="item in paginatedItems"
@@ -78,7 +73,6 @@
             class="transition-all duration-200 bg-white border rounded-lg shadow-sm dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-md"
           >
             <div class="p-4">
-              <!-- Item Header -->
               <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center flex-1">
                   <div
@@ -97,7 +91,6 @@
                     ></p>
                   </div>
                 </div>
-                <!-- Action Buttons -->
                 <div class="flex items-center space-x-2">
                   <Button
                     icon="pi pi-pencil"
@@ -119,9 +112,7 @@
                 </div>
               </div>
 
-              <!-- Item Details -->
               <div class="space-y-3">
-                <!-- Description -->
                 <div>
                   <p
                     class="text-sm text-slate-600 dark:text-slate-400"
@@ -129,10 +120,8 @@
                   ></p>
                 </div>
 
-                <!-- Quantity and SKUs -->
                 <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
                   <div class="flex items-center space-x-4">
-                    <!-- Quantity -->
                     <div class="flex items-center space-x-2">
                       <Button
                         icon="pi pi-minus"
@@ -160,14 +149,12 @@
                       />
                     </div>
 
-                    <!-- SKUs -->
                     <div class="flex items-center text-xs text-slate-500 dark:text-slate-400">
                       <i class="mr-2 pi pi-tag"></i>
                       <span>{{ item.skus.length > 0 ? item.skus.join(', ') : 'No SKUs' }}</span>
                     </div>
                   </div>
 
-                  <!-- Quantity Button -->
                   <Button
                     label="Qty"
                     icon="pi pi-hashtag"
@@ -185,7 +172,6 @@
           </div>
         </div>
 
-        <!-- Mobile Pagination -->
         <div v-if="filteredItems.length > 0" class="flex items-center justify-between px-4 mt-6">
           <div class="text-sm text-slate-500 dark:text-slate-400">
             Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to
@@ -344,7 +330,6 @@
       </div>
     </div>
 
-    <!-- Create/Edit Dialog -->
     <Dialog
       v-model:visible="dialogVisible"
       :header="dialogMode === 'create' ? 'Create Item' : 'Edit Item'"
@@ -471,7 +456,6 @@
       </form>
     </Dialog>
 
-    <!-- Delete Confirmation Dialog -->
     <Dialog
       v-model:visible="deleteDialogVisible"
       header="Confirm Delete"
@@ -506,7 +490,6 @@
       </template>
     </Dialog>
 
-    <!-- Quantity Dialog -->
     <Dialog
       v-model:visible="quantityDialogVisible"
       header="Manage Quantity"
@@ -607,11 +590,9 @@ const dialogMode = ref<'create' | 'edit'>('create')
 const itemToDelete = ref<Item | null>(null)
 const selectedItem = ref<Item | null>(null)
 
-// Mobile pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 
-// Search and filter state
 const searchQuery = ref('')
 const filteredItems = computed(() => {
   if (!searchQuery.value) {
@@ -631,7 +612,6 @@ const totalStock = computed(() => {
   return filteredItems.value.reduce((sum, item) => sum + item.quantity, 0)
 })
 
-// Watch for search changes to reset pagination
 watch(searchQuery, () => {
   currentPage.value = 1
 })
@@ -655,7 +635,6 @@ const errors = reactive({
   quantity: '',
 })
 
-// Mobile pagination computed properties
 const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage.value))
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
@@ -843,7 +822,6 @@ const updateQuantity = async (item: Item, operation: 'set' | 'add' | 'subtract',
 
     await apiService.updateItemQuantity(item.id, data)
 
-    // Update local state
     const index = items.value.findIndex((i) => i.id === item.id)
     if (index !== -1) {
       switch (operation) {
@@ -931,7 +909,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom styles for mobile cards following Design.json */
 .custom-datatable :deep(.p-datatable) {
   border-radius: 8px;
   overflow: hidden;
@@ -962,7 +939,6 @@ onMounted(() => {
   padding: 16px;
 }
 
-/* Dark mode adjustments */
 .dark .custom-datatable :deep(.p-datatable-header) {
   background-color: #1e293b;
   border-bottom: 1px solid #334155;

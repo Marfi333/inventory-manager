@@ -1,17 +1,14 @@
 <template>
   <div class="space-y-6">
-    <!-- Page header -->
     <div class="mb-8">
       <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Dashboard</h1>
       <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Overview of your inventory system</p>
     </div>
 
-    <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-24">
       <i class="text-4xl text-indigo-600 pi pi-spinner pi-spin dark:text-indigo-400"></i>
     </div>
 
-    <!-- Statistics Cards -->
     <div v-else class="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <div
         class="p-4 transition-all duration-200 bg-white border rounded-lg shadow-sm sm:p-6 hover:shadow-md dark:bg-slate-800 border-slate-200 dark:border-slate-700"
@@ -68,7 +65,6 @@
       </div>
     </div>
 
-    <!-- Recent Activity -->
     <div class="bg-white border rounded-lg shadow-sm dark:bg-slate-800 border-slate-200 dark:border-slate-700">
       <div class="p-4 border-b sm:p-6 border-slate-200 dark:border-slate-700">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Recent Items</h2>
