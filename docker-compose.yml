@@ -1,0 +1,34 @@
+name: inventory-system
+
+services:
+  api:
+    image: ghcr.io/marfi333/inventory-manager/api:latest
+    platform: linux/amd64
+    ports:
+      - '3009:3001'
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./data:/app/api/data
+
+  ui:
+    image: ghcr.io/marfi333/inventory-manager/ui:latest
+    platform: linux/amd64
+    environment:
+      - VITE_API_URL=/api
+    ports:
+      - '8089:8080'
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_POLL_INTERVAL: 120
+      WATCHTOWER_LABEL_ENABLE: true
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_REMOVE_VOLUMES: false
+
+networks:
+  app-network:
+    driver: bridge
