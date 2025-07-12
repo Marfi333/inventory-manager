@@ -3,7 +3,6 @@ name: inventory-system
 services:
   api:
     image: ghcr.io/marfi333/inventory-manager/api:latest
-    platform: linux/amd64
     ports:
       - '3009:3001'
     environment:
@@ -13,7 +12,6 @@ services:
 
   ui:
     image: ghcr.io/marfi333/inventory-manager/ui:latest
-    platform: linux/amd64
     environment:
       - VITE_API_URL=/api
     ports:
